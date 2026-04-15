@@ -1,7 +1,8 @@
 import os
 import json
+import time
 from dotenv import load_dotenv
-from google import genai   # New official SDK
+from google import genai
 
 load_dotenv()
 
@@ -18,14 +19,7 @@ class ContentBrain:
             with open(self.state_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         return {
-            "current_story": {
-                "title": "",
-                "genre": "",
-                "part_number": 1,
-                "max_parts": 10,
-                "summary_so_far": "",
-                "characters": []
-            },
+            "current_story": {"title": "", "genre": "", "part_number": 1, "max_parts": 10, "summary_so_far": "", "characters": []},
             "last_run": ""
         }
 
@@ -67,22 +61,42 @@ Return ONLY valid JSON:
 }}
 """
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",          # ← Yeh current best working model hai (April 2026)
-            contents=prompt
-        )
+        # Smart Model Selection Logic
+        primary_model = "gemini-2.5-flash"          # Best quality (pehle isko try karega)
+        backup_models = ["gemini-2.5-flash-lite", "gemini-3.1-flash", "gemini-2.0-flash-exp"]
 
-        clean = response.text.strip().replace("```json", "").replace("```", "").strip()
+        models_to_try = [primary_model] + backup_models
 
-        try:
-            result = json.loads(clean)
-            self.save_state(result["updated_state"])
-            print(f"✅ Generated: {result['title']} | Part {result['part_number']}")
-            return result
-        except Exception as e:
-            print("❌ JSON Error:", e)
-            print("Raw output:", clean[:500])
-            return None
+        for model_name in models_to_try:
+            for attempt in range(3):   # Har model ko 3 baar try karega
+                try:
+                    print(f"🔄 Trying Model: {model_name} (Attempt {attempt+1}/3)")
+                    
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt
+                    )
+
+                    clean = response.text.strip().replace("```json", "").replace("```", "").strip()
+                    result = json.loads(clean)
+
+                    self.save_state(result["updated_state"])
+                    print(f"✅ SUCCESS with {model_name} → {result['title']} | Part {result['part_number']}")
+                    return result
+
+                except Exception as e:
+                    error_str = str(e)
+                    print(f"❌ Failed with {model_name}: {error_str[:100]}")
+
+                    if "503" in error_str or "high demand" in error_str or "UNAVAILABLE" in error_str:
+                        print("⏳ High demand detected, waiting 10 seconds...")
+                        time.sleep(10)
+                        continue
+                    else:
+                        break  # koi aur error hai toh agle model pe jaao
+
+        print("❌ All models failed. Please try again after 10-15 minutes.")
+        return None
 
 
 # Local testing
