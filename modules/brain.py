@@ -1,11 +1,10 @@
 import os
 import json
 from dotenv import load_dotenv
-from google import genai   # ← New official SDK
+from google import genai   # New official SDK
 
 load_dotenv()
 
-# New Gemini Client (2026 recommended)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 class ContentBrain:
@@ -69,7 +68,7 @@ Return ONLY valid JSON:
 """
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash-exp",   # ← Best working model 2026 mein
+            model="gemini-2.5-flash",          # ← Yeh current best working model hai (April 2026)
             contents=prompt
         )
 
