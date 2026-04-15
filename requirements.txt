@@ -1,5 +1,10 @@
 google-generativeai
 edge-tts
 ffmpeg-python
-python-dotenv
+mutagen
+moviepy
+pillow
 requests
+python-dotenv
+colorama
+pydub
