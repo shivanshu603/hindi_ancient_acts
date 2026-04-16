@@ -2,11 +2,11 @@ import os
 import json
 import time
 from dotenv import load_dotenv
-from google import genai
+import google.generativeai as genai   # ← Yeh correct import hai
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 class ContentBrain:
     
@@ -39,46 +39,46 @@ You are an autonomous Cinematic Storyteller AI running a never-ending YouTube Sh
 CURRENT STATE:
 {json.dumps(current, indent=2)}
 
-IMPORTANT RULES:
-- Script **MUST be in English only**.
-- Write dramatic, emotional, cinematic style.
-- Length: 45-60 seconds when spoken.
-- Strong hook at start.
-- End with powerful cliffhanger.
+Task:
+- Agar story nahi hai ya complete ho gayi → Nayi original story banao
+- Agar story chal rahi hai → Sirf next part likho
+
+Rules:
+- Script English mein ho
+- Dramatic aur cinematic tone
+- 45-60 seconds ka script
+- Strong hook + cliffhanger
 
 Return ONLY this JSON format:
 [
   {{
     "id": 1,
-    "text": "Full spoken English script here (45-60 seconds)",
-    "visual_1": "first scene stock footage keywords",
-    "visual_2": "second scene stock footage keywords"
+    "text": "Full spoken English script here",
+    "visual_1": "first scene keywords",
+    "visual_2": "second scene keywords"
   }}
 ]
 """
 
-        models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash"]
+        models = ["gemini-1.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-pro"]
 
         for model_name in models:
             for attempt in range(3):
                 try:
                     print(f"🔄 Trying {model_name} (Attempt {attempt+1})")
-                    response = client.models.generate_content(model=model_name, contents=prompt)
+                    model = genai.GenerativeModel(model_name)
+                    response = model.generate_content(prompt)
                     clean = response.text.strip().replace("```json", "").replace("```", "").strip()
                     result = json.loads(clean)
 
-                    # Save state for continuity
-                    if isinstance(result, list) and len(result) > 0:
-                        updated_state = result[0].get("updated_state", current)
-                        self.save_state(updated_state)
-
+                    self.save_state(result[0].get("updated_state", current) if isinstance(result, list) else current)
                     print(f"✅ SUCCESS with {model_name}")
-                    return result   # Return list (jo audio.py expect karta hai)
+                    return result
 
                 except Exception as e:
                     err = str(e)
-                    print(f"❌ Failed {model_name}: {err[:120]}")
-                    if "503" in err or "high demand" in err or "UNAVAILABLE" in err:
+                    print(f"❌ Failed {model_name}: {err[:100]}")
+                    if "503" in err or "high demand" in err:
                         time.sleep(10)
                         continue
                     else:
@@ -88,7 +88,6 @@ Return ONLY this JSON format:
         return None
 
 
-# For local testing
 if __name__ == "__main__":
     brain = ContentBrain()
     output = brain.generate_script()
