@@ -2,11 +2,11 @@ import os
 import json
 import time
 from dotenv import load_dotenv
-import google.generativeai as genai   # ← Yeh correct import hai
+from google import genai   # New official SDK (2026)
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 class ContentBrain:
     
@@ -34,57 +34,67 @@ class ContentBrain:
         current = self.state["current_story"]
 
         prompt = f"""
-You are an autonomous Cinematic Storyteller AI running a never-ending YouTube Shorts where man  suddenly teleport to acnient times and gives knowledge to to us like if we use morden tools in ancient times .
+You are an autonomous Cinematic Storyteller AI running a never-ending YouTube Shorts mini-movie series.
 
 CURRENT STATE:
 {json.dumps(current, indent=2)}
 
 Task:
 - Agar story nahi hai ya complete ho gayi → Nayi original story banao
-- Agar story chal rahi hai → Sirf next part likho
+- Agar story chal rahi hai → Sirf next part likho (Part #{current.get('part_number', 1)})
 
 Rules:
-- Script hindi mein ho
-- Dramatic aur cinematic tone
+- Script **English** mein ho
+- Dramatic, emotional, cinematic tone
 - 45-60 seconds ka script
-- Strong hook + cliffhanger
+- Strong hook + powerful cliffhanger
 
-Return ONLY this JSON format:
+Return ONLY this exact JSON format (no extra text):
 [
   {{
     "id": 1,
-    "text": "Full spoken hindi script here",
-    "visual_1": "first scene keywords",
-    "visual_2": "second scene keywords"
+    "text": "Full spoken English script here",
+    "visual_1": "first scene stock footage keywords",
+    "visual_2": "second scene stock footage keywords"
   }}
 ]
 """
 
-        models = ["gemini-1.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-pro"]
+        models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash"]
 
         for model_name in models:
             for attempt in range(3):
                 try:
-                    print(f"🔄 Trying {model_name} (Attempt {attempt+1})")
-                    model = genai.GenerativeModel(model_name)
-                    response = model.generate_content(prompt)
+                    print(f"🔄 Trying {model_name} (Attempt {attempt+1}/3)")
+                    
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config={"response_mime_type": "application/json"}
+                    )
+
                     clean = response.text.strip().replace("```json", "").replace("```", "").strip()
                     result = json.loads(clean)
 
-                    self.save_state(result[0].get("updated_state", current) if isinstance(result, list) else current)
+                    # Save state for next part
+                    if isinstance(result, list) and len(result) > 0:
+                        updated = result[0].get("updated_state", current)
+                        self.save_state(updated)
+
                     print(f"✅ SUCCESS with {model_name}")
                     return result
 
                 except Exception as e:
                     err = str(e)
-                    print(f"❌ Failed {model_name}: {err[:100]}")
-                    if "503" in err or "high demand" in err:
+                    print(f"❌ Failed {model_name}: {err[:150]}")
+                    if "503" in err or "high demand" in err or "UNAVAILABLE" in err:
+                        print("⏳ High demand detected, waiting 10 seconds...")
                         time.sleep(10)
                         continue
                     else:
                         break
 
-        print("❌ All models failed")
+        print("❌ All models failed. Try again after some time.")
         return None
 
 
