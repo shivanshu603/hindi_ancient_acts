@@ -73,21 +73,21 @@ async def create_one_short():
     clean_cache()
     print("✅ Short successfully created!")
 
-           # ================== YOUTUBE UPLOAD (SEO Friendly) ==================
-        print("📤 Uploading to YouTube...")
+    # ================== YOUTUBE UPLOAD (SEO Friendly) ==================
+    print("📤 Uploading to YouTube...")
 
-        try:
-            from modules.uploader import YouTubeUploader
-            uploader = YouTubeUploader()
+    try:
+        from modules.uploader import YouTubeUploader
+        uploader = YouTubeUploader()
 
-            first_scene = script_data[0] if isinstance(script_data, list) else script_data
-            script_text = first_scene.get('text', '')
+        first_scene = script_data[0] if isinstance(script_data, list) else script_data
+        script_text = first_scene.get('text', '')
 
-            # Better SEO Title (Hindi + High CTR)
-            title = f"क्या आप जानते हैं? 😱 {script_text[:55]}... | Ancient Secret Facts"
+        # Better SEO Title (Hindi + High CTR)
+        title = f"क्या आप जानते हैं? 😱 {script_text[:55]}... | Ancient Secret Facts"
 
-            # Powerful SEO Description
-            description = f"""🔥 क्या आप जानते हैं?
+        # Powerful SEO Description
+        description = f"""🔥 क्या आप जानते हैं?
 
 {script_text[:280]}...
 
@@ -98,25 +98,25 @@ async def create_one_short():
 
 #DidYouKnow #AncientHistory #HindiFacts #Knowledge #PrachinRahasy #MindBlowingFacts #Shorts"""
 
-            video_path = "assets/final/final_short.mp4"
+        video_path = "assets/final/final_short.mp4"
 
-            video_id = uploader.upload(
-                video_path=video_path,
-                title=title[:100],
-                description=description,
-                tags=["didyouknow", "hindi facts", "ancient history", "pracheen rahasya", "mind blowing facts", "knowledge shorts", "history facts", "ai shorts", "interesting facts"],
-                privacy="public"
-            )
+        video_id = uploader.upload(
+            video_path=video_path,
+            title=title[:100],
+            description=description,
+            tags=["didyouknow", "hindi facts", "ancient history", "pracheen rahasya", "mind blowing facts", "knowledge shorts", "history facts", "ai shorts", "interesting facts"],
+            privacy="public"
+        )
 
-            if video_id:
-                print(f"✅ VIDEO UPLOADED SUCCESSFULLY!")
-                print(f"🔗 https://youtu.be/{video_id}")
-            else:
-                print("❌ Upload failed")
+        if video_id:
+            print(f"✅ VIDEO UPLOADED SUCCESSFULLY!")
+            print(f"🔗 https://youtu.be/{video_id}")
+        else:
+            print("❌ Upload failed")
 
-        except Exception as e:
-            print(f"❌ Upload Error: {e}")
-        # ====================================================
+    except Exception as e:
+        print(f"❌ Upload Error: {e}")
+    # ====================================================
 
 
 async def main():
