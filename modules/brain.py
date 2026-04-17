@@ -2,7 +2,7 @@ import os
 import json
 import time
 from dotenv import load_dotenv
-from google import genai   # New official SDK (2026)
+from google import genai
 
 load_dotenv()
 
@@ -10,53 +10,29 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 class ContentBrain:
     
-    def __init__(self):
-        self.state_file = "stories_state.json"
-        self.state = self.load_state()
-
-    def load_state(self):
-        if os.path.exists(self.state_file):
-            with open(self.state_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return {
-            "current_story": {"title": "", "genre": "", "part_number": 1, "max_parts": 10, "summary_so_far": "", "characters": []},
-            "last_run": ""
-        }
-
-    def save_state(self, new_state):
-        self.state["current_story"] = new_state
-        with open(self.state_file, "w", encoding="utf-8") as f:
-            json.dump(self.state, f, indent=4, ensure_ascii=False)
-
     def generate_script(self):
-        print("🎬 Autonomous Movie Story Mode Started...")
+        print("🎬 Generating Hindi 'Did You Know' Short...")
 
-        current = self.state["current_story"]
+        prompt = """
+You are a top Hindi YouTube Shorts creator specializing in "क्या आप जानते हैं" और "प्राचीन रहस्य" type videos.
 
-        prompt = f"""
-You are an autonomous Cinematic Do you know  Storyteller AI running a never-ending YouTube Shorts mini-movie series where a person teleport to ancient times and do work with morden technique.
-
-CURRENT STATE:
-{json.dumps(current, indent=2)}
-
-Task:
-- Agar story nahi hai ya complete ho gayi → Nayi original story banao
-- Agar story chal rahi hai → Sirf next part likho (Part #{current.get('part_number', 1)})
+एक engaging, mind-blowing, educational short banao (45-60 seconds).
 
 Rules:
-- Script **English** mein ho
-- Dramatic, emotional, cinematic tone
-- 45-60 seconds ka script
-- Strong hook + powerful cliffhanger
+- Script **pure Hindi** mein ho (simple, spoken, YouTube Shorts jaisa)
+- Shuruaat strong hook se karo jaise "क्या आप जानते हैं...", "प्राचीन काल में...", "वैज्ञानिक भी हैरान रह गए जब..."
+- End mein ek powerful line ya sawal ke saath khatam karo
+- Interesting ancient history, lost knowledge, mysterious facts pe focus karo
 
-Return ONLY this exact JSON format (no extra text):
+Return ONLY this exact JSON format:
+
 [
-  {{
+  {
     "id": 1,
-    "text": "Full spoken English script here",
-    "visual_1": "first scene stock footage keywords",
-    "visual_2": "second scene stock footage keywords"
-  }}
+    "text": "Full spoken Hindi script here (45-60 seconds)",
+    "visual_1": "first scene stock footage keywords in English",
+    "visual_2": "second scene stock footage keywords in English"
+  }
 ]
 """
 
@@ -76,19 +52,14 @@ Return ONLY this exact JSON format (no extra text):
                     clean = response.text.strip().replace("```json", "").replace("```", "").strip()
                     result = json.loads(clean)
 
-                    # Save state for next part
-                    if isinstance(result, list) and len(result) > 0:
-                        updated = result[0].get("updated_state", current)
-                        self.save_state(updated)
-
-                    print(f"✅ SUCCESS with {model_name}")
+                    print(f"✅ SUCCESS with {model_name} → Hindi Did You Know Short Generated")
                     return result
 
                 except Exception as e:
                     err = str(e)
-                    print(f"❌ Failed {model_name}: {err[:150]}")
+                    print(f"❌ Failed {model_name}: {err[:120]}")
                     if "503" in err or "high demand" in err or "UNAVAILABLE" in err:
-                        print("⏳ High demand detected, waiting 10 seconds...")
+                        print("⏳ High demand, waiting 10 seconds...")
                         time.sleep(10)
                         continue
                     else:
@@ -98,6 +69,7 @@ Return ONLY this exact JSON format (no extra text):
         return None
 
 
+# For testing
 if __name__ == "__main__":
     brain = ContentBrain()
     output = brain.generate_script()
