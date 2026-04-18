@@ -24,41 +24,38 @@ class ContentBrain:
         return {"used_topics": []}
 
     def save_history(self, topic):
-        if topic not in self.history["used_topics"]:
+        if topic and topic not in self.history["used_topics"]:
             self.history["used_topics"].append(topic)
-            # Sirf last 200 topics rakho (memory limit ke liye)
             if len(self.history["used_topics"]) > 200:
                 self.history["used_topics"] = self.history["used_topics"][-150:]
-            
             with open(self.history_file, "w", encoding="utf-8") as f:
                 json.dump(self.history, f, indent=4, ensure_ascii=False)
 
     def generate_script(self):
         print("🎬 Generating Global Did You Know Short...")
 
-        prompt = f"""
-You are a professional Hindi YouTube Shorts creator making viral "Did You Know" / "Kya Aap Jaante Hain" videos.
+        prompt = """
+You are a professional Hindi YouTube Shorts creator making viral "Did You Know" videos.
 
-Create ONE fresh, mind-blowing, educational short (45-60 seconds).
+Create ONE fresh, mind-blowing short (45-60 seconds).
 
-IMPORTANT RULES:
-- Previously used topics: {self.history["used_topics"][-30:]}  ← In topics ko avoid karo
-- Script mainly **Hinglish** mein ho (natural spoken Hindi + English words)
-- Strong curiosity hook se shuru karo
+Rules:
+- Script mainly **Hinglish** mein ho (natural spoken)
+- Strong hook se shuru karo
 - End mein powerful line ya sawal ke saath khatam karo
-- Topics global hone chahiye (India, Egypt, Rome, Maya, China, Japan, Lost Civilizations, Ancient Science, Mysteries etc.)
-- Har short unique aur fresh hona chahiye
+- Topics global hone chahiye (India, Egypt, Rome, Maya, China, Lost Civilizations, Ancient Science etc.)
+- Har short unique hona chahiye
 
 Return ONLY this exact JSON format:
 
 [
-  {{
+  {
     "id": 1,
     "title": "Hinglish catchy SEO title",
     "text": "Full spoken Hinglish script here (45-60 seconds)",
     "visual_1": "cinematic stock footage keywords",
     "visual_2": "satisfying ASMR style visual keywords"
-  }}
+  }
 ]
 """
 
@@ -78,29 +75,27 @@ Return ONLY this exact JSON format:
                     clean = response.text.strip().replace("```json", "").replace("```", "").strip()
                     result = json.loads(clean)
 
-                    # Save used topic for future avoidance
-                    topic_title = result[0].get("title", "") if isinstance(result, list) else ""
-                    if topic_title:
-                        self.save_history(topic_title)
+                    # Save topic for avoiding repetition
+                    title = result[0].get("title", "") if isinstance(result, list) else ""
+                    if title:
+                        self.save_history(title)
 
                     print(f"✅ SUCCESS with {model_name}")
-                    return result[0] if isinstance(result, list) else result
+                    return result   # ← List return kar rahe hain
 
                 except Exception as e:
                     err = str(e)
                     print(f"❌ Failed {model_name}: {err[:150]}")
                     if "503" in err or "high demand" in err:
-                        print("⏳ High demand, waiting 10 seconds...")
                         time.sleep(10)
                         continue
                     else:
                         break
 
-        print("❌ All models failed. Try again later.")
+        print("❌ All models failed.")
         return None
 
 
-# For testing
 if __name__ == "__main__":
     brain = ContentBrain()
     output = brain.generate_script()
