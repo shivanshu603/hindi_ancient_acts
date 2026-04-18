@@ -87,7 +87,7 @@ async def create_one_short():
         title = f"do you know ? 😱 {script_text[:58]}... | Mind Blowing Facts"
 
         # Rich SEO Description
-        description = f"Do you know?  आप जानते हैं?
+        description = Do you know?  आप जानते हैं?
 
 {script_text[:300]}...
 
