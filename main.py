@@ -37,7 +37,7 @@ async def create_one_short():
     """Ek short generate + upload karega"""
     print("🚀 Starting New Short Generation...")
 
-    # 1. BRAIN - Script Generate
+    # 1. BRAIN
     brain = ContentBrain()
     try:
         script_data = brain.generate_script()
@@ -48,7 +48,7 @@ async def create_one_short():
         print(f"❌ Brain Error: {e}")
         return False
 
-    # 2. AUDIO - Natural Hindi Male Voice
+    # 2. AUDIO
     audio_engine = AudioEngine()
     try:
         script_data = await audio_engine.process_script(script_data)
@@ -56,11 +56,11 @@ async def create_one_short():
         print(f"❌ Audio Error: {e}")
         return False
 
-    # 3. ASSETS - Stock Footage
+    # 3. ASSETS
     asset_manager = AssetManager()
     assets_map = asset_manager.get_videos(script_data)
 
-    # 4. COMPOSER - Video Banaye
+    # 4. COMPOSER
     composer = Composer()
     final_scene_paths = composer.render_all_scenes(script_data, assets_map)
 
@@ -68,7 +68,7 @@ async def create_one_short():
         print("❌ Failed to generate scenes")
         return False
 
-    # 5. Final Video with Transitions
+    # 5. Final Video
     composer.concatenate_with_transitions(final_scene_paths)
     clean_cache()
     print("✅ Short successfully created!")
@@ -84,10 +84,10 @@ async def create_one_short():
         script_text = scene.get('text', 'Interesting Fact')
 
         # Strong Hinglish SEO Title
-        title = f"do you know ? 😱 {script_text[:58]}... | Mind Blowing Facts"
+        title = f"क्या आप जानते हैं? 😱 {script_text[:58]}... | Mind Blowing Facts"
 
-        # Rich SEO Description
-        description = Do you know?  आप जानते हैं?
+        # Correct Multi-line Description
+        description = f"""🔥 क्या आप जानते हैं?
 
 {script_text[:300]}...
 
@@ -140,13 +140,11 @@ async def main():
         else:
             print(f"⚠️ Short #{short_count} had some issues. Continuing...")
 
-        # Wait before next short (balanced rate limit ke liye)
         print(f"⏳ Waiting 9 minutes before next short...\n")
         await asyncio.sleep(540)   # 9 minutes
 
-        # Safety stop after ~5.5 hours
-        if time.time() - start_time > 19800:
-            print("⏹️ Maximum runtime reached (5.5 hours). Stopping now...")
+        if time.time() - start_time > 19800:   # 5.5 hours
+            print("⏹️ Maximum runtime reached. Stopping now...")
             break
 
 
