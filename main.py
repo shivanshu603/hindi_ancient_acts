@@ -4,7 +4,7 @@ from modules.brain import ContentBrain
 from modules.asset_manager import AssetManager
 from modules.audio import AudioEngine
 from modules.composer import Composer
-from modules.thumbnail import ThumbnailGenerator   # ← New added
+from modules.thumbnail import ThumbnailGenerator
 import os
 import shutil
 
@@ -35,7 +35,6 @@ def clean_cache():
 
 
 async def create_one_short(short_number):
-    """Ek short generate + upload karega"""
     print(f"🚀 Starting New Short Generation #{short_number}...")
 
     # 1. BRAIN
@@ -74,7 +73,7 @@ async def create_one_short(short_number):
     clean_cache()
     print("✅ Short successfully created!")
 
-    # 6. THUMBNAIL GENERATION (New Feature)
+    # 6. THUMBNAIL GENERATION
     print("🖼️ Generating Thumbnail...")
     thumbnail_gen = ThumbnailGenerator()
     thumbnail_path = thumbnail_gen.generate_thumbnail(
@@ -83,7 +82,7 @@ async def create_one_short(short_number):
         short_number=short_number
     )
 
-    # 7. YOUTUBE UPLOAD
+    # 7. YOUTUBE UPLOAD with Thumbnail
     print("📤 Uploading to YouTube...")
 
     try:
@@ -105,7 +104,7 @@ async def create_one_short(short_number):
 👍 Like karo agar dimaag hil gaya
 🔔 Subscribe karo roz naye facts ke liye
 
-#DidYouKnow #KyaAapJaanteHain #AncientFacts #MindBlowing #HindiFacts #HistoryShorts #ViralFacts"""
+#DidYouKnow #KyaAapJaanteHain #AncientFacts #MindBlowing #HindiFacts"""
 
         video_path = "assets/final/final_short.mp4"
 
@@ -113,7 +112,8 @@ async def create_one_short(short_number):
             video_path=video_path,
             title=title[:100],
             description=description,
-            tags=["didyouknow", "kya aap jaante hain", "mind blowing facts", "ancient history", "hindi facts", "pracheen rahasya", "viral shorts", "knowledge", "interesting facts"],
+            thumbnail_path=thumbnail_path,      # ← Yeh line add ki hai
+            tags=["didyouknow", "kya aap jaante hain", "mind blowing facts", "ancient history", "hindi facts", "pracheen rahasya", "viral shorts"],
             privacy="public"
         )
 
@@ -148,8 +148,8 @@ async def main():
         else:
             print(f"⚠️ Short #{short_count} had some issues. Continuing...")
 
-        print(f"⏳ Waiting 9 minutes before next short...\n")
-        await asyncio.sleep(540)
+        print(f"⏳ Waiting 12 minutes before next short...\n")
+        await asyncio.sleep(720)   # 12 minutes (upload limit ke liye safe)
 
         if time.time() - start_time > 19800:
             print("⏹️ Maximum runtime reached. Stopping now...")
