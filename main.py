@@ -92,17 +92,25 @@ async def create_one_short(short_number):
         scene = script_data[0] if isinstance(script_data, list) else script_data
         script_text = scene.get('text', 'Interesting Fact')
 
-        title = f"क्या आप जानते हैं? 😱 {script_text[:58]}... | Mind Blowing Facts"
+        title = f"ancient history 😱 {script_text[:58]}... | Mind Blowing Facts"
 
-        description = f"""🔥 क्या आप जानते हैं?
+        description = f"""🔥 do you know about this?
 
-{script_text[:300]}...
+{script_text[:500]}...
 
 🧠 Duniya ke sabse interesting aur rare facts 
 🌍 Ancient History | Lost Civilizations | Mysterious Knowledge
 
 👍 Like karo agar dimaag hil gaya
 🔔 Subscribe karo roz naye facts ke liye
+
+We do not own the video materials, and all credits belong to the respective owners. In case of copyright issues, please contact us immediately
+for further credit or removal.
+
+DISCLAIMER:
+Copyright Disclaimer Under Section 107 of the Copyright Act 1976, allowance is made for "fair use" for purposes such as criticism, comment,
+news reporting, teaching, scholarship, and research. Fair use is a use permitted by copyright statute that might otherwise be infringing. 
+Non-profit, educational, or personal use tips the balance in favor of fair use.
 
 #DidYouKnow #KyaAapJaanteHain #AncientFacts #MindBlowing #HindiFacts"""
 
